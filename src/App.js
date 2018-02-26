@@ -12,25 +12,25 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const dragTarget = document.getElementsByClassName('App')[0];
-    const mapContainer = document.getElementById('root');
+    const dragTarget = document.getElementById('dragable');
+    const rootContainer = document.getElementById('root');
 
     // Get the three major events
-    let mouseup   = Rx.Observable.fromEvent(dragTarget, 'mouseup');
-    let mousemove = Rx.Observable.fromEvent(document,   'mousemove');
-    let mousedown = Rx.Observable.fromEvent(dragTarget, 'mousedown');
+    let mouseup   = Rx.Observable.fromEvent(dragTarget,    'mouseup');
+    let mousemove = Rx.Observable.fromEvent(rootContainer, 'mousemove');
+    let mousedown = Rx.Observable.fromEvent(dragTarget,    'mousedown');
 
-    let touchend   = Rx.Observable.fromEvent(dragTarget, 'touchend');
-    let touchmove  = Rx.Observable.fromEvent(document,   'touchmove');
-    let touchstart = Rx.Observable.fromEvent(dragTarget, 'touchstart');
+    let touchend   = Rx.Observable.fromEvent(dragTarget,    'touchend');
+    let touchmove  = Rx.Observable.fromEvent(rootContainer, 'touchmove');
+    let touchstart = Rx.Observable.fromEvent(dragTarget,    'touchstart');
 
     let mousedrag = mousedown.flatMap(function (md) {
-      let rect = mapContainer.getBoundingClientRect();
-      let mapRect = dragTarget.getBoundingClientRect();
+      let rootRect = rootContainer.getBoundingClientRect();
+      let dragTargetRect = dragTarget.getBoundingClientRect();
 
       // calculate offsets when mouse down
-      let startX = md.clientX - mapRect.left
-        , startY = md.clientY - mapRect.top
+      let startX = md.clientX - dragTargetRect.left
+        , startY = md.clientY - dragTargetRect.top
         ;
 
       // Calculate delta with mousemove until mouseup
@@ -38,19 +38,19 @@ class App extends Component {
         mm.preventDefault();
 
         return {
-          left: mm.clientX - rect.left - startX,
-          top: mm.clientY - rect.top - startY
+          left: mm.clientX - rootRect.left - startX,
+          top: mm.clientY - rootRect.top - startY
         };
       }).takeUntil(mouseup);
     });
 
     let touchdrag = touchstart.flatMap(function(ts) {
       let targetTouches = ts.targetTouches[0];
-      let rect = mapContainer.getBoundingClientRect();
-      let mapRect = dragTarget.getBoundingClientRect();
+      let rootRect = rootContainer.getBoundingClientRect();
+      let dragTargetRect = dragTarget.getBoundingClientRect();
 
-      let startX = targetTouches.clientX - mapRect.left
-        , startY = targetTouches.clientY - mapRect.top
+      let startX = targetTouches.clientX - dragTargetRect.left
+        , startY = targetTouches.clientY - dragTargetRect.top
         ;
 
       return touchmove.map(function(tm) {
@@ -58,8 +58,8 @@ class App extends Component {
         let targetTouches = tm.targetTouches[0];
 
         return {
-          left: targetTouches.clientX - rect.left - startX,
-          top: targetTouches.clientY - rect.top - startY
+          left: targetTouches.clientX - rootRect.left - startX,
+          top: targetTouches.clientY - rootRect.top - startY
         }
       }).takeUntil(touchend);
     });
@@ -78,7 +78,10 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App" style={{top: this.state.top, left: this.state.left}}>
+      <div
+        id="dragable"
+        style={{top: this.state.top, left: this.state.left}}
+      >
         <p>Touch/click and drag me</p>
         <p>
           On mobile, there should be no scroll-bounce at the edges
