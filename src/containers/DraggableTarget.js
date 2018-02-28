@@ -16,7 +16,7 @@ const onMount = dispatch => {
   let touchmove  = Rx.Observable.fromEvent(rootContainer, 'touchmove');
   let touchstart = Rx.Observable.fromEvent(dragTarget,    'touchstart');
 
-  let mousedrag = mousedown.flatMap(function (md) {
+  let mousedrag = mousedown.flatMap(function(md) {
     let rootRect = rootContainer.getBoundingClientRect();
     let dragTargetRect = dragTarget.getBoundingClientRect();
 
