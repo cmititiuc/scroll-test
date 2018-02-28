@@ -64,7 +64,9 @@ const onMount = dispatch => {
   );
 }
 
-const mapStateToProps = state => state;
+const mapStateToProps = ({ top, left }) => (
+  { top, left }
+);
 
 const mapDispatchToProps = dispatch => ({
   onMount: () => onMount(dispatch),
