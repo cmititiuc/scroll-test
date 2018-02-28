@@ -1,5 +1,5 @@
-import updatePosition from './updatePosition'
+import position from './position'
 
-const reducer = updatePosition;
+const reducer = position;
 
 export default reducer;

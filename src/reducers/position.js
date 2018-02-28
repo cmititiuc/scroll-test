@@ -5,7 +5,7 @@ const initialState = {
   left: 0
 };
 
-function updatePosition(state = initialState, action) {
+function position(state = initialState, action) {
   switch (action.type) {
     case UPDATE_POSITION:
       return { top: action.pos.top, left: action.pos.left };
@@ -14,4 +14,4 @@ function updatePosition(state = initialState, action) {
   }
 };
 
-export default updatePosition;
+export default position;
