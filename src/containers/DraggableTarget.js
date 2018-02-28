@@ -1,7 +1,7 @@
 import Rx from 'rxjs/Rx';
 import { connect } from 'react-redux';
 import Target from '../components/Target';
-import { drag } from '../actions';
+import { updatePosition } from '../actions';
 
 const onMount = dispatch => {
   const dragTarget = document.getElementById('target');
@@ -60,14 +60,11 @@ const onMount = dispatch => {
 
   // Update position
   this.dragSubscription = drags.subscribe(
-    pos => dispatch(drag({ top: pos.top, left: pos.left }))
+    pos => dispatch(updatePosition({ top: pos.top, left: pos.left }))
   );
 }
 
-const mapStateToProps = state => ({
-  top: state.top,
-  left: state.left
-});
+const mapStateToProps = state => state;
 
 const mapDispatchToProps = dispatch => ({
   onMount: () => onMount(dispatch),

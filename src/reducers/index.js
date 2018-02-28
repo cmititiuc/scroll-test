@@ -1,5 +1,5 @@
-import drag from './drag'
+import updatePosition from './updatePosition'
 
-const reducer = drag;
+const reducer = updatePosition;
 
 export default reducer;

@@ -27,6 +27,9 @@ class Target extends Component {
 }
 
 Target.propTypes = {
+  onMount: PropTypes.func.isRequired,
+  onUnmount: PropTypes.func.isRequired,
+  dispatch: PropTypes.func,
   top: PropTypes.number.isRequired,
   left: PropTypes.number.isRequired
 };
