@@ -1,65 +1,67 @@
-import Rx from 'rxjs/Rx';
 import { connect } from 'react-redux';
+import { fromEvent } from 'rxjs/observable/fromEvent';
+import { merge } from 'rxjs/observable/merge';
+import 'rxjs/add/operator/mergeMap';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/takeUntil';
 import Target from '../components/Target';
 import { updatePosition } from '../actions';
 
+function createMouseObs(dragTarget, rootContainer) {
+  return {
+    mouseup:   fromEvent(dragTarget,    'mouseup'),
+    mousemove: fromEvent(rootContainer, 'mousemove'),
+    mousedown: fromEvent(dragTarget,    'mousedown')
+  }
+}
+
+function createTouchObs(dragTarget, rootContainer) {
+  return {
+    touchend:   fromEvent(dragTarget,    'touchend'),
+    touchmove:  fromEvent(rootContainer, 'touchmove'),
+    touchstart: fromEvent(dragTarget,    'touchstart')
+  }
+}
+
+function transformMove(rootRect, startX, startY) {
+  return function(moveEvent) {
+    moveEvent.preventDefault();
+    const move = moveEvent.targetTouches ? moveEvent.targetTouches[0] : moveEvent;
+
+    return {
+      left: move.clientX - rootRect.left - startX,
+      top: move.clientY - rootRect.top - startY
+    }
+  }
+}
+
+function transformOrigin(dragTarget, rootContainer, move, terminus) {
+  return function(originEvent) {
+    const origin = originEvent.targetTouches ? originEvent.targetTouches[0] : originEvent
+        , rootRect = rootContainer.getBoundingClientRect()
+        , dragTargetRect = dragTarget.getBoundingClientRect()
+        , startX = origin.clientX - dragTargetRect.left
+        , startY = origin.clientY - dragTargetRect.top
+        ;
+
+    return move.map(transformMove(rootRect, startX, startY)).takeUntil(terminus);
+  }
+}
+
 const onMount = dispatch => {
-  const dragTarget = document.getElementById('target');
-  const rootContainer = document.getElementById('root');
-
-  // Get the three major events
-  let mouseup   = Rx.Observable.fromEvent(dragTarget,    'mouseup');
-  let mousemove = Rx.Observable.fromEvent(rootContainer, 'mousemove');
-  let mousedown = Rx.Observable.fromEvent(dragTarget,    'mousedown');
-
-  let touchend   = Rx.Observable.fromEvent(dragTarget,    'touchend');
-  let touchmove  = Rx.Observable.fromEvent(rootContainer, 'touchmove');
-  let touchstart = Rx.Observable.fromEvent(dragTarget,    'touchstart');
-
-  let mousedrag = mousedown.flatMap(function(md) {
-    let rootRect = rootContainer.getBoundingClientRect();
-    let dragTargetRect = dragTarget.getBoundingClientRect();
-
-    // calculate offsets when mouse down
-    let startX = md.clientX - dragTargetRect.left
-      , startY = md.clientY - dragTargetRect.top
+  const dragTarget    = document.getElementById('target')
+      , rootContainer = document.getElementById('root')
+      , { mouseup, mousemove, mousedown }   = createMouseObs(dragTarget, rootContainer)
+      , { touchend, touchmove, touchstart } = createTouchObs(dragTarget, rootContainer)
+      , callTransform = function(move, terminus) {
+          return transformOrigin(dragTarget, rootContainer, move, terminus)
+        }
+      , mousedrag = mousedown.mergeMap(callTransform(mousemove, mouseup))
+      , touchdrag = touchstart.mergeMap(callTransform(touchmove, touchend))
+      , drag = merge(mousedrag, touchdrag)
       ;
 
-    // Calculate delta with mousemove until mouseup
-    return mousemove.map(function(mm) {
-      mm.preventDefault();
-
-      return {
-        left: mm.clientX - rootRect.left - startX,
-        top: mm.clientY - rootRect.top - startY
-      };
-    }).takeUntil(mouseup);
-  });
-
-  let touchdrag = touchstart.flatMap(function(ts) {
-    let targetTouches = ts.targetTouches[0];
-    let rootRect = rootContainer.getBoundingClientRect();
-    let dragTargetRect = dragTarget.getBoundingClientRect();
-
-    let startX = targetTouches.clientX - dragTargetRect.left
-      , startY = targetTouches.clientY - dragTargetRect.top
-      ;
-
-    return touchmove.map(function(tm) {
-      tm.preventDefault();
-      let targetTouches = tm.targetTouches[0];
-
-      return {
-        left: targetTouches.clientX - rootRect.left - startX,
-        top: targetTouches.clientY - rootRect.top - startY
-      }
-    }).takeUntil(touchend);
-  });
-
-  let drags = Rx.Observable.merge(mousedrag, touchdrag);
-
-  // Update position
-  this.dragSubscription = drags.subscribe(
+  this.dragSubscription = drag.subscribe(
     pos => dispatch(updatePosition({ top: pos.top, left: pos.left }))
   );
 }
