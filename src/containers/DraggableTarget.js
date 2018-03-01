@@ -29,8 +29,8 @@ function transformMove(rootRect, startX, startY) {
     const move = moveEvent.targetTouches ? moveEvent.targetTouches[0] : moveEvent;
 
     return {
-      left: move.clientX - rootRect.left - startX,
-      top: move.clientY - rootRect.top - startY
+      top: move.clientY - rootRect.top - startY,
+      left: move.clientX - rootRect.left - startX
     }
   }
 }

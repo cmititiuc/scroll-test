@@ -12,15 +12,8 @@ class Target extends Component {
 
   render() {
     return (
-      <div
-        id="target"
-        style={{top: this.props.top, left: this.props.left}}
-      >
+      <div id="target" style={{top: this.props.top, left: this.props.left}}>
         <p>Touch/click and drag me</p>
-        <p>
-          On mobile, there should be no scroll-bounce at the edges
-          and no refresh on pull-down
-        </p>
       </div>
     )
   };
