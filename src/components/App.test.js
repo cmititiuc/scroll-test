@@ -14,14 +14,19 @@ configure({ adapter: new Adapter() });
 
 
 it('renders without crashing', () => {
-  const store = createStore(function() { return { top: 0, left: 0 }});
-  const wrapper = mount(
-    <Provider store={store}>
-      <App />
-    </Provider>
-  );
+  const [top, left] = [12, 34]
+      , store = createStore(function() { return { top: top, left: left }})
+      , wrapper = mount(
+          <Provider store={store}>
+            <App />
+          </Provider>
+        )
+      , target = wrapper.find('#container').find('#target')
+      ;
 
-  console.log(wrapper.html());
+  expect(target.exists()).toEqual(true);
+  expect(target.instance().style.top).toEqual(top + 'px');
+  expect(target.instance().style.left).toEqual(left + 'px');
 
   wrapper.unmount();
 });
