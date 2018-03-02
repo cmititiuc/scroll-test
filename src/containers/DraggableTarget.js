@@ -9,20 +9,21 @@ import { updatePosition } from '../actions';
 
 function createMouseObs(dragTarget, rootContainer) {
   return {
-    mouseup:   fromEvent(dragTarget,    'mouseup'),
-    mousemove: fromEvent(rootContainer, 'mousemove'),
-    mousedown: fromEvent(dragTarget,    'mousedown')
+    mouseup$:   fromEvent(dragTarget,    'mouseup'),
+    mousemove$: fromEvent(rootContainer, 'mousemove'),
+    mousedown$: fromEvent(dragTarget,    'mousedown')
   }
 }
 
 function createTouchObs(dragTarget, rootContainer) {
   return {
-    touchend:   fromEvent(dragTarget,    'touchend'),
-    touchmove:  fromEvent(rootContainer, 'touchmove'),
-    touchstart: fromEvent(dragTarget,    'touchstart')
+    touchend$:   fromEvent(dragTarget,    'touchend'),
+    touchmove$:  fromEvent(rootContainer, 'touchmove'),
+    touchstart$: fromEvent(dragTarget,    'touchstart')
   }
 }
 
+// moveEvent - either a mouse move event or a touch move event
 function transformMove(rootRect, startX, startY) {
   return function(moveEvent) {
     moveEvent.preventDefault();
@@ -35,7 +36,10 @@ function transformMove(rootRect, startX, startY) {
   }
 }
 
-function transformOrigin(dragTarget, rootContainer, move, terminus) {
+// originEvent - either a mouse down event or a touch start event
+// move - either a mouse move stream or a touch move stream
+// terminus - either a mouse up stream or a touch end stream
+function transformOrigin(dragTarget, rootContainer, move$, terminus$) {
   return function(originEvent) {
     const origin = originEvent.targetTouches ? originEvent.targetTouches[0] : originEvent
         , rootRect = rootContainer.getBoundingClientRect()
@@ -44,23 +48,23 @@ function transformOrigin(dragTarget, rootContainer, move, terminus) {
         , startY = origin.clientY - dragTargetRect.top
         ;
 
-    return move.map(transformMove(rootRect, startX, startY)).takeUntil(terminus);
+    return move$.map(transformMove(rootRect, startX, startY)).takeUntil(terminus$);
   }
 }
 
 function onMount(dispatch, target, container) {
-  const { mouseup, mousemove, mousedown }   = createMouseObs(target, container)
-      , { touchend, touchmove, touchstart } = createTouchObs(target, container)
-      , callTransform = function(move, terminus) {
-          return transformOrigin(target, container, move, terminus)
+  const { mouseup$, mousemove$, mousedown$ }   = createMouseObs(target, container)
+      , { touchend$, touchmove$, touchstart$ } = createTouchObs(target, container)
+      , callTransform = function(move$, terminus$) {
+          return transformOrigin(target, container, move$, terminus$)
         }
-      , mousedrag = mousedown.mergeMap(callTransform(mousemove, mouseup))
-      , touchdrag = touchstart.mergeMap(callTransform(touchmove, touchend))
-      , drag = merge(mousedrag, touchdrag)
+      , mousedrag$ = mousedown$.mergeMap(callTransform(mousemove$, mouseup$))
+      , touchdrag$ = touchstart$.mergeMap(callTransform(touchmove$, touchend$))
+      , drag$ = merge(mousedrag$, touchdrag$)
       ;
 
   return (() => {
-    this.dragSubscription = drag.subscribe(
+    this.dragSubscription = drag$.subscribe(
       pos => dispatch(updatePosition({ top: pos.top, left: pos.left }))
     );
   });
@@ -76,11 +80,11 @@ function refCallback(name) {
 
 function mapStateToProps({ top, left }) {
   return { top, left };
-};
+}
 
 function mergeProps(stateProps, dispatchProps) {
   return { ...stateProps, ...dispatchProps, onMount, onUnmount, refCallback };
-};
+}
 
 const DraggableTarget = connect(
   mapStateToProps,
