@@ -59,19 +59,19 @@ function onMount(dispatch, target, container) {
       , drag = merge(mousedrag, touchdrag)
       ;
 
-  return function() {
+  return (() => {
     this.dragSubscription = drag.subscribe(
       pos => dispatch(updatePosition({ top: pos.top, left: pos.left }))
     );
-  }
+  });
 }
 
-function containerRefCallback(element) {
-  return (function(element) { this.container = element; });
+function onUnmount() {
+  return (() => { this.dragSubscription.unsubscribe(); });
 }
 
-function targetRefCallback(element) {
-  return (function(element) { this.target = element; });
+function refCallback(name) {
+  return (element => { this[name] = element; });
 }
 
 function mapStateToProps({ top, left }) {
@@ -79,9 +79,7 @@ function mapStateToProps({ top, left }) {
 };
 
 function mergeProps(stateProps, dispatchProps) {
-  return { ...stateProps, ...dispatchProps,
-    onMount, containerRefCallback, targetRefCallback
-  };
+  return { ...stateProps, ...dispatchProps, onMount, onUnmount, refCallback };
 };
 
 const DraggableTarget = connect(
