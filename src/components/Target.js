@@ -2,27 +2,20 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 class Target extends Component {
-  constructor() {
-    super();
-    this.targetRefCallback = this.targetRefCallback.bind(this);
-    this.containerRefCallback = this.containerRefCallback.bind(this);
+  constructor(props) {
+    super(props);
+
+    this.targetRefCallback = props.targetRefCallback().bind(this);
+    this.containerRefCallback = props.containerRefCallback().bind(this);
   }
 
   componentDidMount() {
-    this.dragSubscription =
-      this.props.onMount(this.props.dispatch, this.target, this.container);
+    const { onMount } = this.props;
+    onMount(this.props.dispatch, this.target, this.container).bind(this)();
   }
 
   componentWillUnmount() {
     this.dragSubscription.unsubscribe();
-  }
-
-  containerRefCallback(el) {
-    this.container = el;
-  }
-
-  targetRefCallback(el) {
-    this.target = el;
   }
 
   render() {
