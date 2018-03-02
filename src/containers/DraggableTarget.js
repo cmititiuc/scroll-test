@@ -67,11 +67,11 @@ function onMount(dispatch, target, container) {
 }
 
 function onUnmount() {
-  return (() => { this.dragSubscription.unsubscribe(); });
+  return (() => this.dragSubscription.unsubscribe());
 }
 
 function refCallback(name) {
-  return (element => { this[name] = element; });
+  return (element => this[name] = element);
 }
 
 function mapStateToProps({ top, left }) {

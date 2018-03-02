@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
-import { mount } from 'enzyme';
+import { mount, unmount } from 'enzyme';
 import App from './App';
 
 
@@ -22,4 +22,6 @@ it('renders without crashing', () => {
   );
 
   console.log(wrapper.html());
+
+  wrapper.unmount();
 });

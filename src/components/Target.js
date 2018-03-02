@@ -30,7 +30,7 @@ class Target extends Component {
         </div>
       </div>
     )
-  };
+  }
 }
 
 Target.propTypes = {
