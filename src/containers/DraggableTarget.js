@@ -48,20 +48,18 @@ function transformOrigin(dragTarget, rootContainer, move, terminus) {
   }
 }
 
-const onMount = dispatch => {
-  const dragTarget    = document.getElementById('target')
-      , rootContainer = document.getElementById('root')
-      , { mouseup, mousemove, mousedown }   = createMouseObs(dragTarget, rootContainer)
-      , { touchend, touchmove, touchstart } = createTouchObs(dragTarget, rootContainer)
+const onMount = (dispatch, target, container) => {
+  const { mouseup, mousemove, mousedown }   = createMouseObs(target, container)
+      , { touchend, touchmove, touchstart } = createTouchObs(target, container)
       , callTransform = function(move, terminus) {
-          return transformOrigin(dragTarget, rootContainer, move, terminus)
+          return transformOrigin(target, container, move, terminus)
         }
       , mousedrag = mousedown.mergeMap(callTransform(mousemove, mouseup))
       , touchdrag = touchstart.mergeMap(callTransform(touchmove, touchend))
       , drag = merge(mousedrag, touchdrag)
       ;
 
-  this.dragSubscription = drag.subscribe(
+  return drag.subscribe(
     pos => dispatch(updatePosition({ top: pos.top, left: pos.left }))
   );
 }
@@ -70,14 +68,14 @@ const mapStateToProps = ({ top, left }) => (
   { top, left }
 );
 
-const mapDispatchToProps = dispatch => ({
-  onMount: () => onMount(dispatch),
-  onUnmount: () => this.dragSubscription.unsubscribe()
-});
+const mergeProps = (stateProps, dispatchProps) => (
+  { ...stateProps, ...dispatchProps, onMount }
+);
 
 const DraggableTarget = connect(
   mapStateToProps,
-  mapDispatchToProps
+  null,
+  mergeProps
 )(Target);
 
 export default DraggableTarget;

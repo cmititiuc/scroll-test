@@ -2,18 +2,39 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 class Target extends Component {
+  constructor() {
+    super();
+    this.targetRefCallback = this.targetRefCallback.bind(this);
+    this.containerRefCallback = this.containerRefCallback.bind(this);
+  }
+
   componentDidMount() {
-    this.props.onMount(this.props.dispatch);
+    this.dragSubscription =
+      this.props.onMount(this.props.dispatch, this.target, this.container);
   }
 
   componentWillUnmount() {
-    this.props.onUnmount();
+    this.dragSubscription.unsubscribe();
+  }
+
+  containerRefCallback(el) {
+    this.container = el;
+  }
+
+  targetRefCallback(el) {
+    this.target = el;
   }
 
   render() {
     return (
-      <div id="target" style={{top: this.props.top, left: this.props.left}}>
-        <p>Touch/click and drag me</p>
+      <div id="container" ref={this.containerRefCallback}>
+        <div
+          id="target"
+          ref={this.targetRefCallback}
+          style={{top: this.props.top, left: this.props.left}}
+        >
+          <p>Touch/click and drag me</p>
+        </div>
       </div>
     )
   };
@@ -21,7 +42,6 @@ class Target extends Component {
 
 Target.propTypes = {
   onMount: PropTypes.func.isRequired,
-  onUnmount: PropTypes.func.isRequired,
   dispatch: PropTypes.func,
   top: PropTypes.number.isRequired,
   left: PropTypes.number.isRequired
