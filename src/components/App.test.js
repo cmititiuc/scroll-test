@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import { mount, unmount } from 'enzyme';
+import Position from '../reducers/position';
 import App from './App';
 
 
@@ -15,7 +16,7 @@ configure({ adapter: new Adapter() });
 
 it('renders without crashing', () => {
   const [top, left] = [12, 34]
-      , store = createStore(function() { return { top: top, left: left }})
+      , store = createStore(Position, { top: top, left: left })
       , wrapper = mount(
           <Provider store={store}>
             <App />
