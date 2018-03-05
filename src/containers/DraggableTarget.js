@@ -40,20 +40,20 @@ function transformOrigin(dragTarget, rootContainer, move$, terminus$) {
 // terminus - either a mouse up stream or a touch end stream
 function onMount(dispatch) {
   const { target, container } = this;
-  this.mousedown  = new Subject();
-  this.mousemove  = new Subject();
-  this.mouseup    = new Subject();
-  this.touchstart = new Subject();
-  this.touchend   = new Subject();
-  this.touchmove  = new Subject();
+  this.mousedown$  = new Subject();
+  this.mousemove$  = new Subject();
+  this.mouseup$    = new Subject();
+  this.touchstart$ = new Subject();
+  this.touchend$   = new Subject();
+  this.touchmove$  = new Subject();
 
   const callTransform = function(move$, terminus$) {
           return transformOrigin(target, container, move$, terminus$)
         }
       , mousedrag$ =
-          this.mousedown.mergeMap(callTransform(this.mousemove, this.mouseup))
+          this.mousedown$.mergeMap(callTransform(this.mousemove$, this.mouseup$))
       , touchdrag$ =
-          this.touchstart.mergeMap(callTransform(this.touchmove, this.touchend))
+          this.touchstart$.mergeMap(callTransform(this.touchmove$, this.touchend$))
       , drag$ = merge(mousedrag$, touchdrag$)
       ;
 
@@ -71,7 +71,14 @@ function mapStateToProps({ top, left }) {
 }
 
 function mergeProps(stateProps, dispatchProps) {
-  return { ...stateProps, ...dispatchProps, onMount, onUnmount };
+  return { ...stateProps, ...dispatchProps, onMount, onUnmount,
+    handleMouseDown: function(e) { return this.mousedown$.next(e) },
+    handleMouseUp:   function(e) { return this.mouseup$.next(e) },
+    handleMouseMove: function(e) { return this.mousemove$.next(e) },
+    handleTouchStart: function(e) { return this.touchstart$.next(e) },
+    handleTouchEnd:   function(e) { return this.touchend$.next(e) },
+    handleTouchMove:  function(e) { return this.touchmove$.next(e) }
+  };
 }
 
 const DraggableTarget = connect(

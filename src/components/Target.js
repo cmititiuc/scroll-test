@@ -7,6 +7,14 @@ class Target extends Component {
 
     this.onMount = props.onMount.bind(this);
     this.onUnmount = props.onUnmount.bind(this);
+
+    this.handleMouseDown = props.handleMouseDown.bind(this);
+    this.handleMouseUp   = props.handleMouseUp.bind(this);
+    this.handleMouseMove = props.handleMouseMove.bind(this);
+
+    this.handleTouchStart = props.handleTouchStart.bind(this);
+    this.handleTouchEnd   = props.handleTouchEnd.bind(this);
+    this.handleTouchMove  = props.handleTouchMove.bind(this);
   }
 
   componentDidMount() {
@@ -20,16 +28,16 @@ class Target extends Component {
   render() {
     return (
       <div id="container" ref={el => this.container = el}
-        onMouseMove={e => this.mousemove.next(e)}
-        onTouchMove={e => this.touchmove.next(e)}
+        onMouseMove={this.handleMouseMove}
+        onTouchMove={this.handleTouchMove}
       >
         <div
           id="target"
           ref={el => this.target = el}
-          onMouseDown={e => this.mousedown.next(e)}
-          onMouseUp={e => this.mouseup.next(e)}
-          onTouchStart={e => this.touchstart.next(e)}
-          onTouchEnd={e => this.touchend.next(e)}
+          onMouseDown={this.handleMouseDown}
+          onMouseUp={this.handleMouseUp}
+          onTouchStart={this.handleTouchStart}
+          onTouchEnd={this.handleTouchEnd}
           style={{top: this.props.top, left: this.props.left}}
         >
           <p>Touch/click and drag me</p>
@@ -41,9 +49,16 @@ class Target extends Component {
 
 Target.propTypes = {
   onMount: PropTypes.func.isRequired,
+  onUnmount: PropTypes.func.isRequired,
   dispatch: PropTypes.func,
+  handleMouseDown: PropTypes.func.isRequired,
+  handleMouseUp: PropTypes.func.isRequired,
+  handleMouseMove: PropTypes.func.isRequired,
+  handleTouchStart: PropTypes.func.isRequired,
+  handleTouchEnd: PropTypes.func.isRequired,
+  handleTouchMove: PropTypes.func.isRequired,
   top: PropTypes.number.isRequired,
-  left: PropTypes.number.isRequired
+  left: PropTypes.number.isRequired,
 };
 
 export default Target;
