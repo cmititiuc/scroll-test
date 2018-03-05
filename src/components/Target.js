@@ -8,10 +8,13 @@ class Target extends Component {
     this.refCallback = props.refCallback.bind(this);
     this.onMount = props.onMount.bind(this);
     this.onUnmount = props.onUnmount.bind(this);
+    this.mousedown = props.mousedown.bind(this)();
+    this.mouseup = props.mouseup.bind(this)();
+    this.mousemove = props.mousemove.bind(this)();
   }
 
   componentDidMount() {
-    this.onMount(this.props.dispatch, this.target, this.container)();
+    this.onMount(this.props.dispatch, this.target, this.container, this.mousedown, this.mouseup, this.mousemove)();
   }
 
   componentWillUnmount() {
@@ -20,10 +23,14 @@ class Target extends Component {
 
   render() {
     return (
-      <div id="container" ref={this.refCallback('container')}>
+      <div id="container" ref={this.refCallback('container')}
+        onMouseMove={e => this.mousemove.next(e)}
+      >
         <div
           id="target"
           ref={this.refCallback('target')}
+          onMouseDown={e => this.mousedown.next(e)}
+          onMouseUp={e => this.mouseup.next(e)}
           style={{top: this.props.top, left: this.props.left}}
         >
           <p>Touch/click and drag me</p>

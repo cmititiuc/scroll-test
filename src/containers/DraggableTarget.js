@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import { Subject } from 'rxjs/Subject';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { merge } from 'rxjs/observable/merge';
 import 'rxjs/add/operator/mergeMap';
@@ -52,13 +53,13 @@ function transformOrigin(dragTarget, rootContainer, move$, terminus$) {
   }
 }
 
-function onMount(dispatch, target, container) {
-  const { mouseup$, mousemove$, mousedown$ }   = createMouseObs(target, container)
-      , { touchend$, touchmove$, touchstart$ } = createTouchObs(target, container)
+function onMount(dispatch, target, container, mousedown, mouseup, mousemove) {
+  // const { mouseup$, mousemove$, mousedown$ }   = createMouseObs(target, container)
+  const { touchend$, touchmove$, touchstart$ } = createTouchObs(target, container)
       , callTransform = function(move$, terminus$) {
           return transformOrigin(target, container, move$, terminus$)
         }
-      , mousedrag$ = mousedown$.mergeMap(callTransform(mousemove$, mouseup$))
+      , mousedrag$ = mousedown.mergeMap(callTransform(mousemove, mouseup))
       , touchdrag$ = touchstart$.mergeMap(callTransform(touchmove$, touchend$))
       , drag$ = merge(mousedrag$, touchdrag$)
       ;
@@ -83,7 +84,12 @@ function mapStateToProps({ top, left }) {
 }
 
 function mergeProps(stateProps, dispatchProps) {
-  return { ...stateProps, ...dispatchProps, onMount, onUnmount, refCallback };
+  return { ...stateProps, ...dispatchProps,
+    onMount, onUnmount, refCallback,
+    mousedown: () => (new Subject()),
+    mouseup: () => (new Subject()),
+    mousemove: () => (new Subject())
+  };
 }
 
 const DraggableTarget = connect(
