@@ -50,13 +50,13 @@ function onMount(dispatch) {
   initializeSubjects.bind(this)();
 
   const { mousedown$, mousemove$, mouseup$, touchstart$, touchmove$, touchend$,
-          target, container
+          dragTarget, rootContainer
         } = this
       , mousedrag$ = mousedown$.mergeMap(
-          transformOrigin(target, container, mousemove$, mouseup$)
+          transformOrigin(dragTarget, rootContainer, mousemove$, mouseup$)
         )
       , touchdrag$ = touchstart$.mergeMap(
-          transformOrigin(target, container, touchmove$, touchend$)
+          transformOrigin(dragTarget, rootContainer, touchmove$, touchend$)
         )
       , drag$ = merge(mousedrag$, touchdrag$)
       ;
