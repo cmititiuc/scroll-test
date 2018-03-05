@@ -21,8 +21,8 @@ function transformMove(rootRect, startX, startY) {
 }
 
 // originEvent - either a mouse down event or a touch start event
-// move - either a mouse move stream or a touch move stream
-// terminus - either a mouse up stream or a touch end stream
+// move$ - either a mouse move stream or a touch move stream
+// terminus$ - either a mouse up stream or a touch end stream
 function transformOrigin(dragTarget, rootContainer, move$, terminus$) {
   return function(originEvent) {
     const origin = originEvent.targetTouches ? originEvent.targetTouches[0] : originEvent
@@ -36,8 +36,8 @@ function transformOrigin(dragTarget, rootContainer, move$, terminus$) {
   }
 }
 
-// move - either a mouse move stream or a touch move stream
-// terminus - either a mouse up stream or a touch end stream
+// move$ - either a mouse move stream or a touch move stream
+// terminus$ - either a mouse up stream or a touch end stream
 function onMount(dispatch) {
   const { target, container } = this;
   this.mousedown$  = new Subject();
