@@ -50,7 +50,7 @@ class Target extends Component {
 Target.propTypes = {
   onMount: PropTypes.func.isRequired,
   onUnmount: PropTypes.func.isRequired,
-  dispatch: PropTypes.func,
+  dispatch: PropTypes.func.isRequired,
   handleMouseDown: PropTypes.func.isRequired,
   handleMouseUp: PropTypes.func.isRequired,
   handleMouseMove: PropTypes.func.isRequired,
