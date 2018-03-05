@@ -7,6 +7,16 @@ import 'rxjs/add/operator/takeUntil';
 import Target from '../components/Target';
 import { updatePosition } from '../actions';
 
+function initializeSubjects() {
+  this.mousedown$  = new Subject();
+  this.mousemove$  = new Subject();
+  this.mouseup$    = new Subject();
+
+  this.touchstart$ = new Subject();
+  this.touchmove$  = new Subject();
+  this.touchend$   = new Subject();
+}
+
 // moveEvent - either a mouse move event or a touch move event
 function transformMove(rootRect, startX, startY) {
   return function(moveEvent) {
@@ -36,24 +46,18 @@ function transformOrigin(dragTarget, rootContainer, move$, terminus$) {
   }
 }
 
-// move$ - either a mouse move stream or a touch move stream
-// terminus$ - either a mouse up stream or a touch end stream
 function onMount(dispatch) {
-  const { target, container } = this;
-  this.mousedown$  = new Subject();
-  this.mousemove$  = new Subject();
-  this.mouseup$    = new Subject();
-  this.touchstart$ = new Subject();
-  this.touchend$   = new Subject();
-  this.touchmove$  = new Subject();
+  initializeSubjects.bind(this)();
 
-  const callTransform = function(move$, terminus$) {
-          return transformOrigin(target, container, move$, terminus$)
-        }
-      , mousedrag$ =
-          this.mousedown$.mergeMap(callTransform(this.mousemove$, this.mouseup$))
-      , touchdrag$ =
-          this.touchstart$.mergeMap(callTransform(this.touchmove$, this.touchend$))
+  const { mousedown$, mousemove$, mouseup$, touchstart$, touchmove$, touchend$,
+          target, container
+        } = this
+      , mousedrag$ = mousedown$.mergeMap(
+          transformOrigin(target, container, mousemove$, mouseup$)
+        )
+      , touchdrag$ = touchstart$.mergeMap(
+          transformOrigin(target, container, touchmove$, touchend$)
+        )
       , drag$ = merge(mousedrag$, touchdrag$)
       ;
 
