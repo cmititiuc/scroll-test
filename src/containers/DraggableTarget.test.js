@@ -73,13 +73,16 @@ describe('mouse drag', () => {
     const { target, wrapper, container } = setup()
         , endingPosition = { top: 32 + 'px', left: 11 + 'px' }
         , mousedownEvent = { clientX: 1, clientY: 2 }
-        , mousemoveEvent = { clientX: 12, clientY: 34 }
+        , mousemoveFirstEvent = { clientX: 12, clientY: 34 }
+        , mousemoveSecondEvent = { clientX: 42, clientY: 404 }
         ;
 
+    expect(mousemoveFirstEvent).not.toEqual(mousemoveSecondEvent);
+
     target.simulate('mousedown', mousedownEvent);
-    container.simulate('mousemove', mousemoveEvent);
+    container.simulate('mousemove', mousemoveFirstEvent);
     target.simulate('mouseup');
-    container.simulate('mousemove', { clientX: 42, clientY: 404 });
+    container.simulate('mousemove', mousemoveSecondEvent);
 
     expect(getPosition(target)).toEqual(endingPosition);
 
@@ -121,13 +124,16 @@ describe('touch drag', () => {
     const { target, wrapper, container } = setup()
         , endingPosition = { top: 32 + 'px', left: 11 + 'px' }
         , touchstartEvent = { clientX: 1, clientY: 2 }
-        , touchmoveEvent = { clientX: 12, clientY: 34 }
+        , touchmoveFirstEvent = { clientX: 12, clientY: 34 }
+        , touchmoveSecondEvent = { clientX: 42, clientY: 404 }
         ;
 
+    expect(touchmoveFirstEvent).not.toEqual(touchmoveSecondEvent);
+
     target.simulate('touchstart', touchstartEvent);
-    container.simulate('touchmove', touchmoveEvent);
+    container.simulate('touchmove', touchmoveFirstEvent);
     target.simulate('touchend');
-    container.simulate('touchmove', { clientX: 42, clientY: 404 });
+    container.simulate('touchmove', touchmoveSecondEvent);
 
     expect(getPosition(target)).toEqual(endingPosition);
 
