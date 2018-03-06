@@ -8,27 +8,29 @@ import Position from '../reducers/position';
 import DraggableTarget from './DraggableTarget';
 import Target from '../components/Target';
 
-// setup
-import { configure } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-
-configure({ adapter: new Adapter() });
-
-
 function getPosition(component) {
   const { top, left } = component.instance().style;
   return { top, left };
 }
 
-it('position matches state', () => {
-  const [top, left] = [12, 34]
-      , store = createStore(Position, { top, left })
+function setup(propOverrides) {
+  const props = { top: 0, left: 0, ...propOverrides }
+      , store = createStore(Position, { top: props.top, left: props.left })
       , wrapper = mount(
           <Provider store={store}>
             <DraggableTarget />
           </Provider>
         )
-      , target = wrapper.find('#container').find('#target')
+      , container = wrapper.find('#container')
+      , target = container.find('#target')
+      ;
+
+  return { props, wrapper, store, container, target };
+}
+
+it('matches position to state', () => {
+  const [top, left] = [12, 34]
+      , { target, wrapper } = setup({ top, left })
       ;
 
   expect(target.exists()).toEqual(true);
@@ -37,73 +39,98 @@ it('position matches state', () => {
   wrapper.unmount();
 });
 
-it('position updates when dragged with the mouse', () => {
-  const [top, left] = [0, 0]
-      , store = createStore(Position, { top, left })
-      , wrapper = mount(
-          <Provider store={store}>
-            <DraggableTarget />
-          </Provider>
-        )
-      , targetComp = wrapper.find(Target)
-      , container = wrapper.find('#container')
-      , target = container.find('#target')
-      , newPosition = { top: 54 + 'px', left: 87 + 'px' }
-      , event = { clientX: 99, clientY: 88 }
-      ;
+describe('mouse drag', () => {
+  it('updates position when dragged with the mouse', () => {
+    const { target, wrapper, container } = setup()
+        , newPosition = { top: 32 + 'px', left: 11 + 'px' }
+        , mousedownEvent = { clientX: 1, clientY: 2 }
+        , mousemoveEvent = { clientX: 12, clientY: 34 }
+        ;
 
-  target.simulate('mousedown', { clientX: 12, clientY: 34 });
-  container.simulate('mousemove', event);
-  target.simulate('mouseup');
+    target.simulate('mousedown', mousedownEvent);
+    container.simulate('mousemove', mousemoveEvent);
+    target.simulate('mouseup');
 
-  // expect position to have changed
-  expect(getPosition(target)).toEqual(newPosition);
+    expect(getPosition(target)).toEqual(newPosition);
 
-  wrapper.unmount();
+    wrapper.unmount();
+  });
+
+  it("does not update position before a mousedown event", () => {
+    const { target, wrapper, container, props: { top, left }} = setup()
+        , startingPosition = { top: top + 'px', left: left + 'px' }
+        , mousemoveEvent = { clientX: 12, clientY: 34 }
+        ;
+
+    container.simulate('mousemove', mousemoveEvent);
+
+    expect(getPosition(target)).toEqual(startingPosition);
+
+    wrapper.unmount();
+  });
+
+  it("does not update position after a mouseup event", () => {
+    const { target, wrapper, container } = setup()
+        , endingPosition = { top: 32 + 'px', left: 11 + 'px' }
+        , mousedownEvent = { clientX: 1, clientY: 2 }
+        , mousemoveEvent = { clientX: 12, clientY: 34 }
+        ;
+
+    target.simulate('mousedown', mousedownEvent);
+    container.simulate('mousemove', mousemoveEvent);
+    target.simulate('mouseup');
+    container.simulate('mousemove', { clientX: 42, clientY: 404 });
+
+    expect(getPosition(target)).toEqual(endingPosition);
+
+    wrapper.unmount();
+  });
 });
 
-it("position does not update before a mousedown event", () => {
-  const [top, left] = [0, 0]
-      , store = createStore(Position, { top, left })
-      , wrapper = mount(
-          <Provider store={store}>
-            <DraggableTarget />
-          </Provider>
-        )
-      , targetComp = wrapper.find(Target)
-      , container = wrapper.find('#container')
-      , target = container.find('#target')
-      , newPosition = { top: 54 + 'px', left: 87 + 'px' }
-      , event = { clientX: 99, clientY: 88 }
-      ;
+describe('touch drag', () => {
+  it('updates position when dragged with touch', () => {
+    const { target, wrapper, container } = setup()
+        , newPosition = { top: 32 + 'px', left: 11 + 'px' }
+        , touchstartEvent = { clientX: 1, clientY: 2 }
+        , touchmoveEvent = { clientX: 12, clientY: 34 }
+        ;
 
-  container.simulate('mousemove', { clientX: 99, clientY: 88 });
+    target.simulate('touchstart', touchstartEvent);
+    container.simulate('touchmove', touchmoveEvent);
+    target.simulate('touchend');
 
-  expect(getPosition(target)).toEqual({ top: top + 'px', left: left + 'px' });
-});
+    expect(getPosition(target)).toEqual(newPosition);
 
-it("position does not update after a mouseup event", () => {
-  const [top, left] = [0, 0]
-      , store = createStore(Position, { top, left })
-      , wrapper = mount(
-          <Provider store={store}>
-            <DraggableTarget />
-          </Provider>
-        )
-      , targetComp = wrapper.find(Target)
-      , container = wrapper.find('#container')
-      , target = container.find('#target')
-      , newPosition = { top: 54 + 'px', left: 87 + 'px' }
-      , event = { clientX: 99, clientY: 88 }
-      ;
+    wrapper.unmount();
+  });
 
-  target.simulate('mousedown', { clientX: 12, clientY: 34 });
-  container.simulate('mousemove', event);
-  target.simulate('mouseup');
-  container.simulate('mousemove', { clientX: 99, clientY: 88 });
+  it("does not update position before a touchstart event", () => {
+    const { target, wrapper, container, props: { top, left }} = setup()
+        , startingPosition = { top: top + 'px', left: left + 'px' }
+        , touchmoveEvent = { clientX: 12, clientY: 34 }
+        ;
 
-  // expect no change in position after mouseup
-  expect(getPosition(target)).toEqual(newPosition);
+    container.simulate('touchmove', touchmoveEvent);
 
-  wrapper.unmount();
+    expect(getPosition(target)).toEqual(startingPosition);
+
+    wrapper.unmount();
+  });
+
+  it("does not update position after a touchend event", () => {
+    const { target, wrapper, container } = setup()
+        , endingPosition = { top: 32 + 'px', left: 11 + 'px' }
+        , touchstartEvent = { clientX: 1, clientY: 2 }
+        , touchmoveEvent = { clientX: 12, clientY: 34 }
+        ;
+
+    target.simulate('touchstart', touchstartEvent);
+    container.simulate('touchmove', touchmoveEvent);
+    target.simulate('touchend');
+    container.simulate('touchmove', { clientX: 42, clientY: 404 });
+
+    expect(getPosition(target)).toEqual(endingPosition);
+
+    wrapper.unmount();
+  });
 });

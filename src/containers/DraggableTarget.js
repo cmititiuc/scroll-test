@@ -33,10 +33,10 @@ function transformMove(rootRect, startX, startY) {
 // originEvent - either a mouse down event or a touch start event
 // move$ - either a mouse move stream or a touch move stream
 // terminus$ - either a mouse up stream or a touch end stream
-function transformOrigin(rootContainer, move$, terminus$) {
+function transformOrigin(container, move$, terminus$) {
   return function(originEvent) {
     const origin = originEvent.targetTouches ? originEvent.targetTouches[0] : originEvent
-        , rootRect = rootContainer.getBoundingClientRect()
+        , rootRect = container.getBoundingClientRect()
         , dragTargetRect = originEvent.target.getBoundingClientRect()
         , startX = origin.clientX - dragTargetRect.left
         , startY = origin.clientY - dragTargetRect.top
@@ -50,13 +50,13 @@ function onMount(dispatch) {
   initializeSubjects.bind(this)();
 
   const { mousedown$, mousemove$, mouseup$, touchstart$, touchmove$, touchend$,
-          rootContainer
+          container
         } = this
       , mousedrag$ = mousedown$.mergeMap(
-          transformOrigin(rootContainer, mousemove$, mouseup$)
+          transformOrigin(container, mousemove$, mouseup$)
         )
       , touchdrag$ = touchstart$.mergeMap(
-          transformOrigin(rootContainer, touchmove$, touchend$)
+          transformOrigin(container, touchmove$, touchend$)
         )
       , drag$ = merge(mousedrag$, touchdrag$)
       ;

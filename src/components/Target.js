@@ -27,7 +27,7 @@ class Target extends Component {
 
   render() {
     return (
-      <div id="container" ref={el => this.rootContainer = el}
+      <div id="container" ref={el => this.container = el}
         onMouseMove={this.handleMouseMove}
         onTouchMove={this.handleTouchMove}
       >

@@ -6,14 +6,6 @@ import { mount, unmount } from 'enzyme';
 import Position from '../reducers/position';
 import App from './App';
 
-
-// setup
-import { configure } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-
-configure({ adapter: new Adapter() });
-
-
 it('renders without crashing', () => {
   const [top, left] = [12, 34]
       , store = createStore(Position, { top: top, left: left })
